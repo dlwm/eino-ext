@@ -331,10 +331,20 @@ func (cm *ChatModel) genInputAndConf(input []*schema.Message, opts ...model.Opti
 	}
 
 	if len(tools) > 0 {
-		t := &genai.Tool{
-			FunctionDeclarations: make([]*genai.FunctionDeclaration, len(tools)),
+		var customFunctionCallList = make([]*genai.FunctionDeclaration, 0, len(tools))
+		t := &genai.Tool{}
+		for _, tool := range tools {
+			switch tool.Name {
+			case "google_search":
+				t.GoogleSearch = &genai.GoogleSearch{}
+			//case "googleMaps":
+			//	t.GoogleMaps = &genai.GoogleMaps{}
+			default:
+				customFunctionCallList = append(customFunctionCallList, tool)
+			}
 		}
-		copy(t.FunctionDeclarations, tools)
+		t.FunctionDeclarations = make([]*genai.FunctionDeclaration, 0, len(customFunctionCallList))
+		copy(t.FunctionDeclarations, customFunctionCallList)
 		m.Tools = append(m.Tools, t)
 	}
 	if cm.enableCodeExecution {
