@@ -407,16 +407,35 @@ func (cm *ChatModel) genInputAndConf(input []*schema.Message, opts ...model.Opti
 		}
 	}
 
-	nInput := make([]*schema.Message, len(input))
-	copy(nInput, input)
-	if len(input) > 1 && input[0].Role == schema.System {
-		var err error
-		m.SystemInstruction, err = cm.convSchemaMessage(input[0])
+	// 这种写法不支持多 System 提示词，多的会被加在用户消息里
+	//nInput := make([]*schema.Message, len(input))
+	//copy(nInput, input)
+	//if len(input) > 1 && input[0].Role == schema.System {
+	//	var err error
+	//	m.SystemInstruction, err = cm.convSchemaMessage(input[0])
+	//	if err != nil {
+	//		return "", nil, nil, nil, fmt.Errorf("failed to convert system instruction: %w", err)
+	//	}
+	//	nInput = input[1:]
+	//}
+	// 改为下面的写法，支持多 System 提示词
+	inpNotSys := make([]*schema.Message, 0, len(input))
+	for _, message := range input {
+		if message.Role != schema.System {
+			inpNotSys = append(inpNotSys, message)
+		}
+		convMsg, err := cm.convSchemaMessage(message)
 		if err != nil {
 			return "", nil, nil, nil, fmt.Errorf("failed to convert system instruction: %w", err)
 		}
-		nInput = input[1:]
+		if m.SystemInstruction == nil {
+			m.SystemInstruction = convMsg
+		} else {
+			m.SystemInstruction.Parts = append(m.SystemInstruction.Parts, convMsg.Parts...)
+		}
 	}
+	nInput := make([]*schema.Message, len(inpNotSys))
+	copy(nInput, inpNotSys)
 
 	m.ThinkingConfig = cm.thinkingConfig
 	if geminiOptions.ThinkingConfig != nil {
