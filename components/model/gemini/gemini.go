@@ -423,6 +423,7 @@ func (cm *ChatModel) genInputAndConf(input []*schema.Message, opts ...model.Opti
 	for _, message := range input {
 		if message.Role != schema.System {
 			inpNotSys = append(inpNotSys, message)
+			continue
 		}
 		convMsg, err := cm.convSchemaMessage(message)
 		if err != nil {
