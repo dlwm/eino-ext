@@ -384,6 +384,8 @@ func (cm *ChatModel) genInputAndConf(input []*schema.Message, opts ...model.Opti
 					Mode: genai.FunctionCallingConfigModeAny,
 				}}
 			}
+		case "":
+			// do nothing
 		default:
 			return "", nil, nil, nil, fmt.Errorf("tool choice=%s not support", *commonOptions.ToolChoice)
 		}
