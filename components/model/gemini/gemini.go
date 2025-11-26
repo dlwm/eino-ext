@@ -849,6 +849,12 @@ func (cm *ChatModel) convCandidate(candidate *genai.Candidate) (*schema.Message,
 					return nil, err
 				}
 				result.ToolCalls = append(result.ToolCalls, *fc)
+			} else if part.ThoughtSignature != nil && len(part.ThoughtSignature) > 0 {
+				// Handle thought signature with built-in function call (for gemini-3-pro and later)
+				if result.Extra == nil {
+					result.Extra = make(map[string]any)
+				}
+				result.Extra[thoughtSignatureKey] = string(part.ThoughtSignature)
 			}
 			if part.CodeExecutionResult != nil {
 				texts = append(texts, part.CodeExecutionResult.Output)
