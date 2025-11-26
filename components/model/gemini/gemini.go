@@ -544,7 +544,7 @@ func (cm *ChatModel) convSchemaMessage(message *schema.Message) (*genai.Content,
 					part.ThoughtSignature = thoughtSig
 				}
 			}
-			content.Parts = append(content.Parts)
+			content.Parts = append(content.Parts, part)
 		}
 		if message.MultiContent != nil {
 			log.Printf("MultiContent field is deprecated, please use UserInputMultiContent or AssistantGenMultiContent instead")
