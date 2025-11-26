@@ -538,7 +538,13 @@ func (cm *ChatModel) convSchemaMessage(message *schema.Message) (*genai.Content,
 			return content, nil
 		}
 		if message.Content != "" {
-			content.Parts = append(content.Parts, genai.NewPartFromText(message.Content))
+			part := genai.NewPartFromText(message.Content)
+			if message.Extra != nil && message.Extra[thoughtSignatureKey] != nil {
+				if thoughtSig, ok := message.Extra[thoughtSignatureKey].([]byte); ok {
+					part.ThoughtSignature = thoughtSig
+				}
+			}
+			content.Parts = append(content.Parts)
 		}
 		if message.MultiContent != nil {
 			log.Printf("MultiContent field is deprecated, please use UserInputMultiContent or AssistantGenMultiContent instead")
@@ -854,7 +860,7 @@ func (cm *ChatModel) convCandidate(candidate *genai.Candidate) (*schema.Message,
 				if result.Extra == nil {
 					result.Extra = make(map[string]any)
 				}
-				result.Extra[thoughtSignatureKey] = string(part.ThoughtSignature)
+				result.Extra[thoughtSignatureKey] = part.ThoughtSignature
 			}
 			if part.CodeExecutionResult != nil {
 				texts = append(texts, part.CodeExecutionResult.Output)
